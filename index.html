@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulário Interativo - Zoho Desk</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+  <div class="container mx-auto mt-10">
+    <h1 class="text-3xl font-bold text-center mb-8">Criação de Ticket - Zoho Desk</h1>
+
+    <form id="ticketForm" class="bg-white p-8 rounded-lg shadow-lg space-y-6">
+
+      <!-- Seção Registro -->
+      <div class="space-y-4">
+        <h2 class="text-xl font-semibold">Registro do Ticket</h2>
+
+        <!-- Proprietário do ticket -->
+        <div>
+          <label class="block text-gray-700">Proprietário do Ticket</label>
+          <input type="text" name="owner" class="w-full p-2 border border-gray-300 rounded" placeholder="Automático" disabled>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label class="block text-gray-700">Status</label>
+          <select name="status" class="w-full p-2 border border-gray-300 rounded">
+            <option value="open">Aberto</option>
+            <option value="onhold">Em Espera</option>
+            <option value="inprogress">Em Atendimento</option>
+            <option value="escalated">Escalado</option>
+            <option value="closed">Fechado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Seção Regra de Negócio -->
+      <div class="space-y-4">
+        <h2 class="text-xl font-semibold">Regra de Negócio</h2>
+
+        <!-- Categoria do Ticket -->
+        <div>
+          <label class="block text-gray-700">Categoria do Ticket</label>
+          <select id="category" name="category" class="w-full p-2 border border-gray-300 rounded">
+            <option value="general">Geral</option>
+            <option value="general_attachment">Geral Anexo</option>
+            <option value="custom">Personalizado</option>
+          </select>
+        </div>
+
+        <!-- Tipo de Ticket (dinâmico) -->
+        <div id="ticketTypeContainer">
+          <label class="block text-gray-700">Tipo de Ticket</label>
+          <select id="ticketType" name="ticketType" class="w-full p-2 border border-gray-300 rounded">
+            <!-- Este campo será preenchido dinamicamente via JavaScript -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Seção Informações Gerais -->
+      <div class="space-y-4">
+        <h2 class="text-xl font-semibold">Informações Gerais</h2>
+
+        <!-- Nome do Contato -->
+        <div>
+          <label class="block text-gray-700">Nome do Contato</label>
+          <input type="text" name="contactName" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o nome do contato" required>
+        </div>
+
+        <!-- E-mail -->
+        <div>
+          <label class="block text-gray-700">E-mail</label>
+          <input type="email" name="email" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o e-mail do contato" required>
+        </div>
+
+        <!-- Assunto -->
+        <div>
+          <label class="block text-gray-700">Assunto</label>
+          <input type="text" name="subject" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o assunto do ticket" required>
+        </div>
+
+        <!-- Descrição -->
+        <div>
+          <label class="block text-gray-700">Descrição</label>
+          <textarea name="description" class="w-full p-2 border border-gray-300 rounded" rows="4" placeholder="Descreva o problema ou solicitação" required></textarea>
+        </div>
+
+        <!-- Grupo e Cota -->
+        <div>
+          <label class="block text-gray-700">Grupo e Cota</label>
+          <input type="text" name="quotaGroup" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o grupo e cota" required>
+        </div>
+
+        <!-- CPF/CNPJ -->
+        <div>
+          <label class="block text-gray-700">CPF/CNPJ</label>
+          <input type="text" name="cpfCnpj" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o CPF ou CNPJ" required>
+        </div>
+      </div>
+
+      <!-- Botão de Enviar -->
+      <div class="text-center">
+        <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Enviar Ticket</button>
+      </div>
+
+      <!-- Área de feedback (carregamento, sucesso ou erro) -->
+      <div id="feedback" class="text-center hidden mt-4"></div>
+
+    </form>
+  </div>
+
+  <script>
+    // Opções de Tipo de Ticket para cada categoria
+    const ticketTypes = {
+      general: [
+        'Abono de Multa e Juros', 'Ajuste no Plano de Cobrança', 'Alienar Bem', 'Análise de Reativação', 'Aprovação de Cota Quitada', 
+        'Avaliação do Bem Imóvel', 'Cancelamento da Oferta de Lance', 'Comprovante de Pagamento', 'Conferência de Proposta', 
+        'Diversas Cobranças', 'Estorno Sobra de Crédito', 'Registro Contrato de alienação Detran', 'Termo de Liberação de Garantia Imóvel'
+      ],
+      general_attachment: [
+        'Análise Formulário Reativação', 'Atualização SPC/Serasa', 'Aumento de Categoria', 'Cancelamento de Simulação de Transferência', 
+        'Consultoria Análise App', 'Envio de AF', 'Faturamento do Bem', 'Inclusão de 2º Titular', 
+        'Liberação de Excesso de Garantia Auto', 'Programação de Devolução de Grupos Encerrados', 'Renegociações de Lance', 'Troca de Bem'
+      ],
+      custom: [
+        'Abono de Multa e Juros', 'Agendamento de vistoria', 'Ajuste no Plano de Cobrança', 'Alienar Bem', 'Alteração Código Comissionado', 
+        'Análise de Crédito - Interna', 'Análise de transferência', 'Análise faturamento', 'Análise Formulário Reativação', 
+        'Análise de Reativação', 'Aprovação de Cota Quitada', 'Atualização SPC/Serasa', 'Aumento de Categoria', 'Autorização de Garantia', 
+        'Avaliação do Bem Imóvel', 'Bloquear Cancelamento da Cota', 'Boletos', 'Cancelamento da Cota', 'Cancelamento da Oferta de Lance', 
+        'Cancelamento de Simulação de Transferência', 'Cancelar Alienação', 'Comprovante de Pagamento', 'Comprovante de Cotas', 
+        'Conferência de Proposta', 'Consultoria Análise App', 'Desalienação Cota Quitada', 'Devolução de Parcela Inicial', 
+        'Devolução de Valores Cota não Cadastrada', 'Descontemplação', 'Devolução de Valores (Geral)', 'Divergência de Contrato Adesões', 
+        'Diversas Cobranças', 'Emissão de Extrato', 'Envio de AF', 'Estorno Sobra de Crédito', 'Exclusão e inclusão de devedor solidário', 
+        'Faturamento do Bem Imóvel', 'Faturamento do Bem', 'Inclusão de 2º Titular', 'Liberação de Excesso de Garantia Auto'
+      ]
+    };
+
+    // Atualizar opções de Tipo de Ticket com base na categoria selecionada
+    const category = document.getElementById('category');
+    const ticketType = document.getElementById('ticketType');
+
+    category.addEventListener('change', function () {
+      const selectedCategory = this.value;
+      ticketType.innerHTML = ''; // Limpar opções atuais
+      if (ticketTypes[selectedCategory]) {
+        ticketTypes[selectedCategory].forEach(type => {
+          const option = document.createElement('option');
+          option.value = type;
+          option.textContent = type;
+          ticketType.appendChild(option);
+        });
+      }
+    });
+
+    // Inicializar com a categoria 'general'
+    category.dispatchEvent(new Event('change'));
+  </script>
+
+<script src="main.js"></script>
+
+</body>
+</html>
