@@ -1,164 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formulário Interativo - Zoho Desk</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
-
-  <div class="container mx-auto mt-10">
-    <h1 class="text-3xl font-bold text-center mb-8">Criação de Ticket - Zoho Desk</h1>
-
-    <form id="ticketForm" class="bg-white p-8 rounded-lg shadow-lg space-y-6">
-
-      <!-- Seção Registro -->
-      <div class="space-y-4">
-        <h2 class="text-xl font-semibold">Registro do Ticket</h2>
-
-        <!-- Proprietário do ticket -->
-        <div>
-          <label class="block text-gray-700">Proprietário do Ticket</label>
-          <input type="text" name="owner" class="w-full p-2 border border-gray-300 rounded" placeholder="Automático" disabled>
-        </div>
-
-        <!-- Status -->
-        <div>
-          <label class="block text-gray-700">Status</label>
-          <select name="status" class="w-full p-2 border border-gray-300 rounded">
-            <option value="open">Aberto</option>
-            <option value="onhold">Em Espera</option>
-            <option value="inprogress">Em Atendimento</option>
-            <option value="escalated">Escalado</option>
-            <option value="closed">Fechado</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Seção Regra de Negócio -->
-      <div class="space-y-4">
-        <h2 class="text-xl font-semibold">Regra de Negócio</h2>
-
-        <!-- Categoria do Ticket -->
-        <div>
-          <label class="block text-gray-700">Categoria do Ticket</label>
-          <select id="category" name="category" class="w-full p-2 border border-gray-300 rounded">
-            <option value="general">Geral</option>
-            <option value="general_attachment">Geral Anexo</option>
-            <option value="custom">Personalizado</option>
-          </select>
-        </div>
-
-        <!-- Tipo de Ticket (dinâmico) -->
-        <div id="ticketTypeContainer">
-          <label class="block text-gray-700">Tipo de Ticket</label>
-          <select id="ticketType" name="ticketType" class="w-full p-2 border border-gray-300 rounded">
-            <!-- Este campo será preenchido dinamicamente via JavaScript -->
-          </select>
-        </div>
-      </div>
-
-      <!-- Seção Informações Gerais -->
-      <div class="space-y-4">
-        <h2 class="text-xl font-semibold">Informações Gerais</h2>
-
-        <!-- Nome do Contato -->
-        <div>
-          <label class="block text-gray-700">Nome do Contato</label>
-          <input type="text" name="contactName" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o nome do contato" required>
-        </div>
-
-        <!-- E-mail -->
-        <div>
-          <label class="block text-gray-700">E-mail</label>
-          <input type="email" name="email" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o e-mail do contato" required>
-        </div>
-
-        <!-- Assunto -->
-        <div>
-          <label class="block text-gray-700">Assunto</label>
-          <input type="text" name="subject" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o assunto do ticket" required>
-        </div>
-
-        <!-- Descrição -->
-        <div>
-          <label class="block text-gray-700">Descrição</label>
-          <textarea name="description" class="w-full p-2 border border-gray-300 rounded" rows="4" placeholder="Descreva o problema ou solicitação" required></textarea>
-        </div>
-
-        <!-- Grupo e Cota -->
-        <div>
-          <label class="block text-gray-700">Grupo e Cota</label>
-          <input type="text" name="quotaGroup" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o grupo e cota" required>
-        </div>
-
-        <!-- CPF/CNPJ -->
-        <div>
-          <label class="block text-gray-700">CPF/CNPJ</label>
-          <input type="text" name="cpfCnpj" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o CPF ou CNPJ" required>
-        </div>
-      </div>
-
-      <!-- Botão de Enviar -->
-      <div class="text-center">
-        <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Enviar Ticket</button>
-      </div>
-
-      <!-- Área de feedback (carregamento, sucesso ou erro) -->
-      <div id="feedback" class="text-center hidden mt-4"></div>
-
-    </form>
-  </div>
-
-  <script>
-    // Opções de Tipo de Ticket para cada categoria
-    const ticketTypes = {
-      general: [
-        'Abono de Multa e Juros', 'Ajuste no Plano de Cobrança', 'Alienar Bem', 'Análise de Reativação', 'Aprovação de Cota Quitada', 
-        'Avaliação do Bem Imóvel', 'Cancelamento da Oferta de Lance', 'Comprovante de Pagamento', 'Conferência de Proposta', 
-        'Diversas Cobranças', 'Estorno Sobra de Crédito', 'Registro Contrato de alienação Detran', 'Termo de Liberação de Garantia Imóvel'
-      ],
-      general_attachment: [
-        'Análise Formulário Reativação', 'Atualização SPC/Serasa', 'Aumento de Categoria', 'Cancelamento de Simulação de Transferência', 
-        'Consultoria Análise App', 'Envio de AF', 'Faturamento do Bem', 'Inclusão de 2º Titular', 
-        'Liberação de Excesso de Garantia Auto', 'Programação de Devolução de Grupos Encerrados', 'Renegociações de Lance', 'Troca de Bem'
-      ],
-      custom: [
-        'Abono de Multa e Juros', 'Agendamento de vistoria', 'Ajuste no Plano de Cobrança', 'Alienar Bem', 'Alteração Código Comissionado', 
-        'Análise de Crédito - Interna', 'Análise de transferência', 'Análise faturamento', 'Análise Formulário Reativação', 
-        'Análise de Reativação', 'Aprovação de Cota Quitada', 'Atualização SPC/Serasa', 'Aumento de Categoria', 'Autorização de Garantia', 
-        'Avaliação do Bem Imóvel', 'Bloquear Cancelamento da Cota', 'Boletos', 'Cancelamento da Cota', 'Cancelamento da Oferta de Lance', 
-        'Cancelamento de Simulação de Transferência', 'Cancelar Alienação', 'Comprovante de Pagamento', 'Comprovante de Cotas', 
-        'Conferência de Proposta', 'Consultoria Análise App', 'Desalienação Cota Quitada', 'Devolução de Parcela Inicial', 
-        'Devolução de Valores Cota não Cadastrada', 'Descontemplação', 'Devolução de Valores (Geral)', 'Divergência de Contrato Adesões', 
-        'Diversas Cobranças', 'Emissão de Extrato', 'Envio de AF', 'Estorno Sobra de Crédito', 'Exclusão e inclusão de devedor solidário', 
-        'Faturamento do Bem Imóvel', 'Faturamento do Bem', 'Inclusão de 2º Titular', 'Liberação de Excesso de Garantia Auto'
-      ]
-    };
-
-    // Atualizar opções de Tipo de Ticket com base na categoria selecionada
-    const category = document.getElementById('category');
-    const ticketType = document.getElementById('ticketType');
-
-    category.addEventListener('change', function () {
-      const selectedCategory = this.value;
-      ticketType.innerHTML = ''; // Limpar opções atuais
-      if (ticketTypes[selectedCategory]) {
-        ticketTypes[selectedCategory].forEach(type => {
-          const option = document.createElement('option');
-          option.value = type;
-          option.textContent = type;
-          ticketType.appendChild(option);
-        });
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solicitação de Ticket - Zoho Desk</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      /* Estilo Toggle */
+      .switch {
+        display: inline-block;
+        position: relative;
+        width: 50px;
+        height: 24px;
       }
-    });
+      .switch input {
+        display: none;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 4px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #4a90e2;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+      .toggle-label {
+        font-weight: bold;
+        margin: 0 10px;
+        font-size: 16px;
+      }
+      .toggle-label.active {
+        color: #4a90e2;
+      }
+      .toggle-label.inactive {
+        color: #bbb;
+      }
+      input:checked ~ #cpfLabel {
+        color: #bbb;
+      }
+      input:checked ~ #cnpjLabel {
+        color: #4a90e2;
+      }
 
-    // Inicializar com a categoria 'general'
-    category.dispatchEvent(new Event('change'));
-  </script>
+      /* Pré-loader */
+      .loader {
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #3498db;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <div class="container mx-auto mt-10">
+      <h1 class="text-3xl font-bold text-center mb-8">Solicitação de Ticket</h1>
 
-<script src="main.js"></script>
+      <form id="ticketForm" class="bg-white p-8 rounded-lg shadow-lg space-y-6">
+        <!-- Campo CPF/CNPJ com Toggle -->
+        <div class="space-y-4">
+          <h2 class="text-xl font-semibold">Dados do Solicitante</h2>
+          <div class="flex items-center">
+            <label class="toggle-label active" id="cpfLabel">CPF</label>
+            <label class="switch">
+              <input type="checkbox" id="cpfCnpjToggle" />
+              <span class="slider"></span>
+            </label>
+            <label class="toggle-label inactive" id="cnpjLabel">CNPJ</label>
+          </div>
+          <div>
+            <input
+              type="text"
+              id="cpfCnpj"
+              name="cpfCnpj"
+              class="w-full p-2 border border-gray-300 rounded"
+              placeholder="Digite seu CPF"
+              maxlength="14"
+            />
+          </div>
+        </div>
 
-</body>
+        <!-- Campos para dados do usuário -->
+        <div id="userData" class="hidden">
+          <label class="block text-gray-700">Nome</label>
+          <input
+            type="text"
+            id="firstName"
+            name="firstName"
+            class="w-full p-2 border border-gray-300 rounded"
+            disabled
+          />
+
+          <label class="block text-gray-700">Sobrenome</label>
+          <input
+            type="text"
+            id="lastName"
+            name="lastName"
+            class="w-full p-2 border border-gray-300 rounded"
+            disabled
+          />
+
+          <label class="block text-gray-700">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="w-full p-2 border border-gray-300 rounded"
+            disabled
+          />
+        </div>
+
+        <!-- Campos para cadastro quando o usuário não for encontrado -->
+        <div id="additionalFields" class="hidden">
+          <label class="block text-gray-700">Email secundário</label>
+          <input
+            type="email"
+            id="secondaryEmail"
+            name="secondaryEmail"
+            class="w-full p-2 border border-gray-300 rounded"
+          />
+
+          <label class="block text-gray-700">Empresa</label>
+          <input
+            type="text"
+            id="accountName"
+            name="accountName"
+            class="w-full p-2 border border-gray-300 rounded"
+          />
+
+          <label class="block text-gray-700">Telefone</label>
+          <input
+            type="text"
+            id="phone"
+            name="phone"
+            class="w-full p-2 border border-gray-300 rounded"
+          />
+
+          <label class="block text-gray-700">Celular</label>
+          <input
+            type="text"
+            id="mobile"
+            name="mobile"
+            class="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+
+        <!-- Categoria e Subcategoria do Ticket -->
+        <div class="space-y-4">
+          <label class="block text-gray-700">Categoria do Ticket</label>
+          <select id="cf_categoria_do_ticket" name="cf_categoria_do_ticket" class="w-full p-2 border border-gray-300 rounded">
+            <option value="0">Selecione</option>
+            <option value="general">Geral</option>
+            <option value="personalizado">Personalizado</option>
+            <option value="general_attachment">Geral Anexo</option>
+          </select>
+        </div>
+
+        <div id="subCategoryContainer" class="hidden">
+          <label class="block text-gray-700">Subcategoria</label>
+          <select id="cf_tipo_de_solicitacao" name="cf_tipo_de_solicitacao" class="w-full p-2 border border-gray-300 rounded">
+            <option value="0">Selecione</option>
+            <option value="abono_multas_juros">Abono de Multas e Juros</option>
+            <!-- Outras subcategorias podem ser adicionadas aqui -->
+          </select>
+        </div>
+
+        <!-- Campos Específicos para Abono de Multas e Juros -->
+        <div id="abonoFields" class="hidden">
+          <label class="block text-gray-700">Grupo e Cota (apenas números)</label>
+          <input
+            type="text"
+            id="cf_grupo_e_cota"
+            name="cf_grupo_e_cota"
+            class="w-full p-2 border border-gray-300 rounded"
+            placeholder="Digite o grupo e cota"
+            required
+            pattern="\d+"
+          />
+
+          <div class="form-group">
+            <label for="subject">Assunto</label>
+            <input
+              type="text"
+              id="subject"
+              name="subject"
+              class="w-full p-2 border border-gray-300 rounded"
+              placeholder="Digite o assunto do ticket"
+              required
+            />
+          </div>
+
+          <label class="block text-gray-700">Descrição</label>
+          <textarea
+            id="description"
+            name="description"
+            class="w-full p-2 border border-gray-300 rounded"
+            placeholder="Digite a descrição"
+            rows="4"
+            required
+          ></textarea>
+        </div>
+
+        <!-- Loader para busca -->
+        <div id="loader" class="loader hidden mx-auto"></div>
+
+        <!-- Botão de Enviar -->
+        <div class="text-center">
+          <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Enviar Ticket</button>
+        </div>
+      </form>
+    </div>
+
+    <script src="js/main.js" defer></script>
+  </body>
 </html>
