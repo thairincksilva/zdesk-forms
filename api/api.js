@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { getNewAccessToken } from '../auth/auth.js';
+import { getNewAccessToken } from './auth/auth.js';
 
 const orgId = '861735330';
 
