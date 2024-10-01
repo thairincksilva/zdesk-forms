@@ -8,83 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <style>
-      /* Estilo Toggle */
-      .switch {
-        display: inline-block;
-        position: relative;
-        width: 50px;
-        height: 24px;
-      }
-      .switch input {
-        display: none;
-      }
-      .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        transition: 0.4s;
-        border-radius: 34px;
-      }
-      .slider:before {
-        position: absolute;
-        content: "";
-        height: 18px;
-        width: 18px;
-        left: 4px;
-        bottom: 3px;
-        background-color: white;
-        transition: 0.4s;
-        border-radius: 50%;
-      }
-      input:checked + .slider {
-        background-color: #4a90e2;
-      }
-      input:checked + .slider:before {
-        transform: translateX(26px);
-      }
-      .toggle-label {
-        font-weight: bold;
-        margin: 0 10px;
-        font-size: 16px;
-      }
-      .toggle-label.active {
-        color: #4a90e2;
-      }
-      .toggle-label.inactive {
-        color: #bbb;
-      }
-
-      /* Pré-loader */
-      .loader {
-        border: 5px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 5px solid #3498db;
-        width: 30px;
-        height: 30px;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Passos ativos e ocultos */
-      .step {
-        display: none;
-      }
-      .step.active {
-        display: block;
-      }
-    </style>
+    <link rel="stylesheet" href="/assets/style.css" />
   </head>
 
   <body class="bg-gray-100">
@@ -115,7 +39,7 @@
           </div>
         </div>
 
-        <!-- Campos para dados do contato (nome, sobrenome, email, telefone, celular) -->
+        <!-- Campos fixos para dados do contato -->
         <div id="contactFields" class="space-y-4">
           <label class="block text-gray-700">Nome</label>
           <input type="text" id="firstName" name="firstName" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o nome" />
@@ -125,6 +49,18 @@
 
           <label class="block text-gray-700">Email</label>
           <input type="email" id="email" name="email" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o email" />
+
+          <!-- Campo fixo para Nome da Empresa -->
+          <!-- <div class="space-y-4">
+            <label class="block text-gray-700">Nome da Empresa</label>
+            <input
+              type="text"
+              id="accountName"
+              name="accountName"
+              class="w-full p-2 border border-gray-300 rounded"
+              placeholder="Digite o nome da empresa"
+            />
+          </div> -->
 
           <label class="block text-gray-700">Telefone</label>
           <input type="text" id="phone" name="phone" class="w-full p-2 border border-gray-300 rounded" placeholder="Digite o telefone" />
@@ -151,38 +87,8 @@
           </select>
         </div>
 
-        <!-- Campos adicionais como Grupo e Cota, CPF/CNPJ, etc. -->
-        <div id="additionalFields" class="hidden">
-          <label class="block text-gray-700">Grupo e Cota (apenas números)</label>
-          <input
-            type="text"
-            id="cf_grupo_e_cota"
-            name="cf_grupo_e_cota"
-            class="w-full p-2 border border-gray-300 rounded"
-            placeholder="Digite o grupo e cota"
-            pattern="\d+"
-          />
-
-          <div>
-            <label class="block text-gray-700">Assunto</label>
-            <input
-              type="text"
-              id="subject"
-              name="subject"
-              class="w-full p-2 border border-gray-300 rounded"
-              placeholder="Digite o assunto do ticket"
-            />
-          </div>
-
-          <label class="block text-gray-700">Descrição</label>
-          <textarea
-            id="description"
-            name="description"
-            class="w-full p-2 border border-gray-300 rounded"
-            placeholder="Digite a descrição"
-            rows="4"
-          ></textarea>
-        </div>
+        <!-- Campos adicionais gerados dinamicamente -->
+        <div id="dynamicFields" class="space-y-4 hidden"></div>
 
         <!-- Loader para busca -->
         <div id="loader" class="loader hidden mx-auto"></div>
@@ -194,6 +100,9 @@
       </form>
     </div>
 
-    <script src="js/main.js" defer></script>
+    <script src="js/ticketTypes.js" defer type="module"></script>
+    <script src="js/main.js" defer type="module">
+      console.log('sasdadas')
+    </script>
   </body>
 </html>

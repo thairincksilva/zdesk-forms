@@ -1,3 +1,7 @@
+import { getSubCategoriesByCategory, getTicketFieldsBySubCategory, generateTicketDataAbonoMultasJuros, generateTicketDataAjustePlanoCobranca, generateTicketDataAlienarBem } from './ticketTypes.js';
+
+console.log("main.js carregado com sucesso!");
+
 // Inicializar o formulário
 document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('cpfCnpj').value = '';
@@ -5,12 +9,11 @@ document.addEventListener('DOMContentLoaded', function () {
   toggleCpfCnpj(false);
 
   // Exibe campos sempre visíveis
-  document.getElementById('userData').classList.remove('hidden');
-  document.getElementById('additionalFields').classList.remove('hidden');
+  document.getElementById('contactFields').classList.remove('hidden');
+  document.getElementById('dynamicFields').classList.remove('hidden');
 
   // Inicializa com o campo de subcategoria oculto
   document.getElementById('subCategoryContainer').classList.add('hidden');
-  document.getElementById('abonoFields').classList.add('hidden');
 });
 
 // Lógica para alternar entre CPF/CNPJ
@@ -58,41 +61,21 @@ document.getElementById('cpfCnpj').addEventListener('input', function () {
   }
 });
 
-// Ticket types e subcategorias
-const ticketTypes = {
-  general: [
-    'Abono de Multa e Juros', 'Ajuste no Plano de Cobrança', 'Alienar Bem', 'Análise de Reativação', 'Aprovação de Cota Quitada',
-    'Avaliação do Bem Imóvel', 'Cancelamento da Oferta de Lance', 'Comprovante de Pagamento', 'Conferência de Proposta',
-    'Diversas Cobranças', 'Estorno Sobra de Crédito', 'Registro Contrato de alienação Detran', 'Termo de Liberação de Garantia Imóvel'
-  ],
-  general_attachment: [
-    'Análise Formulário Reativação', 'Atualização SPC/Serasa', 'Aumento de Categoria', 'Cancelamento de Simulação de Transferência',
-    'Consultoria Análise App', 'Envio de AF', 'Faturamento do Bem', 'Inclusão de 2º Titular',
-    'Liberação de Excesso de Garantia Auto', 'Programação de Devolução de Grupos Encerrados', 'Renegociações de Lance', 'Troca de Bem'
-  ],
-  custom: [
-    'Abono de Multa e Juros', 'Agendamento de vistoria', 'Ajuste no Plano de Cobrança', 'Alienar Bem', 'Alteração Código Comissionado',
-    'Análise de Crédito - Interna', 'Análise de transferência', 'Análise faturamento', 'Análise Formulário Reativação',
-    'Análise de Reativação', 'Aprovação de Cota Quitada', 'Atualização SPC/Serasa', 'Aumento de Categoria', 'Autorização de Garantia',
-    'Avaliação do Bem Imóvel', 'Bloquear Cancelamento da Cota', 'Boletos', 'Cancelamento da Cota', 'Cancelamento da Oferta de Lance',
-    'Cancelamento de Simulação de Transferência', 'Cancelar Alienação', 'Comprovante de Pagamento', 'Comprovante de Cotas',
-    'Conferência de Proposta', 'Consultoria Análise App', 'Desalienação Cota Quitada', 'Devolução de Parcela Inicial',
-    'Devolução de Valores Cota não Cadastrada', 'Descontemplação', 'Devolução de Valores (Geral)', 'Divergência de Contrato Adesões',
-    'Diversas Cobranças', 'Emissão de Extrato', 'Envio de AF', 'Estorno Sobra de Crédito', 'Exclusão e inclusão de devedor solidário',
-    'Faturamento do Bem Imóvel', 'Faturamento do Bem', 'Inclusão de 2º Titular', 'Liberação de Excesso de Garantia Auto'
-  ]
-};
-
 // Lógica para exibir subcategorias com base na categoria selecionada
 document.getElementById('cf_categoria_do_ticket').addEventListener('change', function () {
-  const ticketType = this.value;
+  const category = this.value;
   const subCategoryContainer = document.getElementById('subCategoryContainer');
   const subCategorySelect = document.getElementById('cf_tipo_de_solicitacao');
+  
+  const subCategories = getSubCategoriesByCategory(category);
+  
+  console.log('Categoria selecionada:', category);  // Depuração
+  console.log('Subcategorias encontradas:', subCategories);  // Depuração
 
   subCategorySelect.innerHTML = '<option value="0">Selecione</option>'; // Limpa subcategorias
-  if (ticketTypes[ticketType]) {
+  if (subCategories.length) {
     subCategoryContainer.classList.remove('hidden');
-    ticketTypes[ticketType].forEach(function (subCategory) {
+    subCategories.forEach(function (subCategory) {
       const option = document.createElement('option');
       option.value = subCategory;
       option.text = subCategory;
@@ -100,38 +83,130 @@ document.getElementById('cf_categoria_do_ticket').addEventListener('change', fun
     });
   } else {
     subCategoryContainer.classList.add('hidden');
+    console.error('Nenhuma subcategoria encontrada para a categoria:', category); // Depuração
   }
 });
 
 // Lógica para exibir campos adicionais com base na subcategoria
 document.getElementById('cf_tipo_de_solicitacao').addEventListener('change', function () {
   const subCategory = this.value;
-  const abonoFields = document.getElementById('abonoFields'); // Certifique-se de que o elemento existe
+  const dynamicFields = document.getElementById('dynamicFields');
+  
+  dynamicFields.innerHTML = ''; // Limpa os campos adicionais
 
-  // Verifica se o elemento existe antes de tentar manipulá-lo
-  if (abonoFields) {
-    // Verifica se a subcategoria selecionada é "Abono de Multas e Juros"
-    if (subCategory === 'Abono de Multa e Juros') {
-      abonoFields.classList.remove('hidden');
-    } else {
-      abonoFields.classList.add('hidden');
+  const fields = getTicketFieldsBySubCategory(subCategory);
+
+  if (fields.length > 0) {
+    fields.forEach(function (field) {
+      const fieldContainer = document.createElement('div');
+      const label = document.createElement('label');
+      label.className = 'block text-gray-700';
+      label.textContent = field.label;
+
+      let input;
+      if (field.type === 'textarea') {
+        input = document.createElement('textarea');
+        input.rows = '4';
+      } else if (field.type === 'select') {
+        input = document.createElement('select');
+        field.options.forEach(optionValue => {
+          const option = document.createElement('option');
+          option.value = optionValue;
+          option.text = optionValue;
+          input.appendChild(option);
+        });
+      } else {
+        input = document.createElement('input');
+        input.type = field.type;
+      }
+
+      input.id = field.id;
+      input.name = field.id;
+      input.placeholder = field.placeholder;
+      input.className = 'w-full p-2 border border-gray-300 rounded';
+
+      fieldContainer.appendChild(label);
+      fieldContainer.appendChild(input);
+      dynamicFields.appendChild(fieldContainer);
+    });
+
+    dynamicFields.classList.remove('hidden');
+  } else {
+    dynamicFields.classList.add('hidden');
+  }
+});
+
+// Função para verificar se o contato já existe no Zoho Desk
+async function checkIfContactExists(email) {
+  try {
+    const response = await fetch(`http://localhost:3000/api/getContactByEmail?email=${email}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+    if (response.ok && result.data && result.data.length > 0) {
+      // Retorna o primeiro contato encontrado
+      return result.data[0]; // Assumindo que result.data é um array de contatos
     }
-  } else {
-    console.error('Elemento "abonoFields" não encontrado no DOM.');
+    return null; // Se não encontrar nenhum contato, retorna null
+  } catch (error) {
+    console.error('Erro ao verificar contato existente:', error);
+    return null;
   }
-});
+}
 
-document.getElementById('cf_tipo_de_solicitacao').addEventListener('change', function () {
-  const subCategory = this.value;
-  const abonoFields = document.getElementById('abonoFields');
+// Função para criar ou obter o contactId
+async function createOrGetContact() {
+  const email = document.getElementById('email').value;
 
-  // Verifica se a subcategoria selecionada é "Abono de Multas e Juros"
-  if (subCategory === 'Abono de Multa e Juros') {
-    abonoFields.classList.remove('hidden');
+  // Verificar se o contato já existe
+  const existingContact = await checkIfContactExists(email);
+
+  if (existingContact) {
+    console.log('Contato existente encontrado:', existingContact);
+    return existingContact.id; // Retorna o contactId existente
   } else {
-    abonoFields.classList.add('hidden');
+    console.log('Nenhum contato existente. Criando novo contato...');
+    // Se o contato não existe, cria um novo
+    const contactData = {
+      firstName: document.getElementById('firstName').value,
+      lastName: document.getElementById('lastName').value,
+      email: email,
+      phone: document.getElementById('phone').value,
+      mobile: document.getElementById('mobile').value,
+      cpfCnpj: document.getElementById('cpfCnpj').value.replace(/\D/g, ''),
+    };
+
+    try {
+      const response = await fetch('http://localhost:3000/api/createContact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactData),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        return result.id; // Retorna o novo contactId
+      } else {
+        throw new Error('Erro ao criar contato');
+      }
+    } catch (error) {
+      console.error('Erro ao criar contato:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro',
+        text: 'Não foi possível criar ou obter o contato. Verifique os dados e tente novamente.',
+        confirmButtonText: 'OK',
+      });
+      throw error;
+    }
   }
-});
+}
 
 // Lógica para enviar o formulário e criar contato/ticket
 document.getElementById('ticketForm').addEventListener('submit', async function (event) {
@@ -143,58 +218,32 @@ document.getElementById('ticketForm').addEventListener('submit', async function 
   const firstName = document.getElementById('firstName').value;
   const lastName = document.getElementById('lastName').value;
   const email = document.getElementById('email').value;
-  const accountName = document.getElementById('accountName').value;
   const phone = document.getElementById('phone').value;
   const mobile = document.getElementById('mobile').value;
-  const grupoCota = document.getElementById('cf_grupo_e_cota').value;
-
-  // Função para criar ou obter o contactId
-  async function createOrGetContact() {
-    const contactData = {
-      firstName,
-      lastName,
-      email,
-      accountName,
-      phone,
-      mobile,
-      cpfCnpj
-    };
-
-    try {
-      const response = await fetch('http://localhost:3000/api/createContact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(contactData)
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        return result.id; // Retorna o contactId
-      } else if (result.message.includes('já existe')) {
-        return result.id; // Se o contato já existe, captura o ID
-      } else {
-        throw new Error('Erro ao criar ou obter contato');
-      }
-    } catch (error) {
-      console.error('Erro ao criar ou obter contato:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Erro',
-        text: 'Não foi possível criar ou obter o contato. Verifique os dados e tente novamente.',
-        confirmButtonText: 'OK'
-      });
-      throw error;
-    }
-  }
+  const grupoCota = document.getElementById('cf_grupo_e_cota') ? document.getElementById('cf_grupo_e_cota').value : '';
 
   try {
     // Obtém ou cria o contato e recupera o contactId
     const contactId = await createOrGetContact();
 
-    // Gera os dados do ticket
-    const ticketData = generateTicketDataAbonoMultasJuros(subject, description, contactId, grupoCota, cpfCnpj);
+    const subCategory = document.getElementById('cf_tipo_de_solicitacao').value;
+
+    let ticketData;
+
+    // Chama a função correspondente ao tipo de subcategoria
+    switch (subCategory) {
+      case 'Abono de Multa e Juros':
+        ticketData = generateTicketDataAbonoMultasJuros(subject, description, contactId, grupoCota, cpfCnpj);
+        break;
+      case 'Ajuste no Plano de Cobrança':
+        ticketData = generateTicketDataAjustePlanoCobranca(subject, description, contactId, grupoCota, cpfCnpj);
+        break;
+      case 'Alienar Bem':
+        ticketData = generateTicketDataAlienarBem(subject, description, contactId, grupoCota, cpfCnpj);
+        break;
+      default:
+        throw new Error('Subcategoria inválida ou não implementada');
+    }
 
     // Envia o ticket
     const response = await fetch('http://localhost:3000/api/createTicket', {
