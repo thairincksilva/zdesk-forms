@@ -38,7 +38,6 @@ export async function getNewAccessToken() {
 
 // Função para criar um ticket
 export default async function createTicket(req, res) {
-  const { subject, description, contactId, departmentId, channel, status } = req.body;
 
   const accessToken = await getNewAccessToken(); 
   if (!accessToken) {
@@ -46,14 +45,7 @@ export default async function createTicket(req, res) {
     return;
   }
 
-  const ticketData = {
-    subject,
-    description,
-    contactId,
-    departmentId,
-    channel,
-    status
-  };
+  const ticketData = req.body;
 
   console.log('Ticket data a ser enviado:', ticketData); // Log dos dados do ticket
 
