@@ -1,10 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import createTicket from './api/createTicket.js'; 
-import createContact from './api/createContact.js'; 
-import getCustomer from './api/getCustomer.js';
-import getContactByEmail from './api/getContactByEmail.js';  // Importe a funcionalidade de buscar contato
+import createTicket from './createTicket.js'; 
+import createContact from './createContact.js'; 
+import getCustomer from './getCustomer.js';
+import getContactByEmail from './getContactByEmail.js';  // Importe a funcionalidade de buscar contato
 
 const app = express();
 const PORT = process.env.PORT || 3000;
