@@ -3,6 +3,14 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('cpfCnpj').value = '';
   document.getElementById('cpfCnpjToggle').checked = false;
   toggleCpfCnpj(false);
+
+  // Exibe campos sempre visíveis
+  document.getElementById('userData').classList.remove('hidden');
+  document.getElementById('additionalFields').classList.remove('hidden');
+
+  // Inicializa com o campo de subcategoria oculto
+  document.getElementById('subCategoryContainer').classList.add('hidden');
+  document.getElementById('abonoFields').classList.add('hidden');
 });
 
 // Lógica para alternar entre CPF/CNPJ
@@ -50,111 +58,145 @@ document.getElementById('cpfCnpj').addEventListener('input', function () {
   }
 });
 
-// Lógica para buscar cliente existente ao digitar CPF/CNPJ completo
-document.getElementById('cpfCnpj').addEventListener('blur', async function () {
-  const cpfCnpjValue = this.value.replace(/\D/g, '');
-  const isCnpj = document.getElementById('cpfCnpjToggle').checked;
+// Ticket types e subcategorias
+const ticketTypes = {
+  general: [
+    'Abono de Multa e Juros', 'Ajuste no Plano de Cobrança', 'Alienar Bem', 'Análise de Reativação', 'Aprovação de Cota Quitada',
+    'Avaliação do Bem Imóvel', 'Cancelamento da Oferta de Lance', 'Comprovante de Pagamento', 'Conferência de Proposta',
+    'Diversas Cobranças', 'Estorno Sobra de Crédito', 'Registro Contrato de alienação Detran', 'Termo de Liberação de Garantia Imóvel'
+  ],
+  general_attachment: [
+    'Análise Formulário Reativação', 'Atualização SPC/Serasa', 'Aumento de Categoria', 'Cancelamento de Simulação de Transferência',
+    'Consultoria Análise App', 'Envio de AF', 'Faturamento do Bem', 'Inclusão de 2º Titular',
+    'Liberação de Excesso de Garantia Auto', 'Programação de Devolução de Grupos Encerrados', 'Renegociações de Lance', 'Troca de Bem'
+  ],
+  custom: [
+    'Abono de Multa e Juros', 'Agendamento de vistoria', 'Ajuste no Plano de Cobrança', 'Alienar Bem', 'Alteração Código Comissionado',
+    'Análise de Crédito - Interna', 'Análise de transferência', 'Análise faturamento', 'Análise Formulário Reativação',
+    'Análise de Reativação', 'Aprovação de Cota Quitada', 'Atualização SPC/Serasa', 'Aumento de Categoria', 'Autorização de Garantia',
+    'Avaliação do Bem Imóvel', 'Bloquear Cancelamento da Cota', 'Boletos', 'Cancelamento da Cota', 'Cancelamento da Oferta de Lance',
+    'Cancelamento de Simulação de Transferência', 'Cancelar Alienação', 'Comprovante de Pagamento', 'Comprovante de Cotas',
+    'Conferência de Proposta', 'Consultoria Análise App', 'Desalienação Cota Quitada', 'Devolução de Parcela Inicial',
+    'Devolução de Valores Cota não Cadastrada', 'Descontemplação', 'Devolução de Valores (Geral)', 'Divergência de Contrato Adesões',
+    'Diversas Cobranças', 'Emissão de Extrato', 'Envio de AF', 'Estorno Sobra de Crédito', 'Exclusão e inclusão de devedor solidário',
+    'Faturamento do Bem Imóvel', 'Faturamento do Bem', 'Inclusão de 2º Titular', 'Liberação de Excesso de Garantia Auto'
+  ]
+};
 
-  if ((isCnpj && cpfCnpjValue.length === 14) || (!isCnpj && cpfCnpjValue.length === 11)) {
-    showLoader(true);
-
-    try {
-      const response = await fetch(`http://localhost:3000/api/getCustomer/${cpfCnpjValue}`);
-      const customerData = await response.json();
-
-      if (response.ok) {
-        fillCustomerData(customerData);
-      } else {
-        showCustomerFields(true);
-        Swal.fire({
-          icon: 'warning',
-          title: 'Ops!',
-          text: 'Não encontramos seu cadastro. Preencha as informações abaixo por favor.',
-          confirmButtonText: 'OK'
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao buscar cliente:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Erro de conexão',
-        text: 'Não foi possível buscar os dados. Tente novamente mais tarde.',
-        confirmButtonText: 'OK'
-      });
-    } finally {
-      showLoader(false);
-    }
-  }
-});
-
-function fillCustomerData(customerData) {
-  document.getElementById('firstName').value = customerData.firstName || 'N/A';
-  document.getElementById('lastName').value = customerData.lastName || 'N/A';
-  document.getElementById('email').value = customerData.email || 'N/A';
-  document.getElementById('userData').classList.remove('hidden');
-  document.getElementById('firstName').setAttribute('disabled', 'true');
-  document.getElementById('lastName').setAttribute('disabled', 'true');
-  document.getElementById('email').setAttribute('disabled', 'true');
-}
-
-// Exibe os campos para novo cadastro se não encontrar o cliente
-function showCustomerFields(show) {
-  const fields = document.getElementById('additionalFields');
-  fields.classList.toggle('hidden', !show);
-}
-
-// Exibe/esconde o loader
-function showLoader(show) {
-  const loader = document.getElementById('loader');
-  loader.classList.toggle('hidden', !show);
-}
-
-// Lógica para exibir subcategoria ao selecionar Categoria "Geral"
+// Lógica para exibir subcategorias com base na categoria selecionada
 document.getElementById('cf_categoria_do_ticket').addEventListener('change', function () {
   const ticketType = this.value;
   const subCategoryContainer = document.getElementById('subCategoryContainer');
-  const abonoFields = document.getElementById('abonoFields');
+  const subCategorySelect = document.getElementById('cf_tipo_de_solicitacao');
 
-  if (ticketType === 'general') {
+  subCategorySelect.innerHTML = '<option value="0">Selecione</option>'; // Limpa subcategorias
+  if (ticketTypes[ticketType]) {
     subCategoryContainer.classList.remove('hidden');
-    document.getElementById('cf_tipo_de_solicitacao').value = '0';
-    abonoFields.classList.add('hidden');
+    ticketTypes[ticketType].forEach(function (subCategory) {
+      const option = document.createElement('option');
+      option.value = subCategory;
+      option.text = subCategory;
+      subCategorySelect.appendChild(option);
+    });
   } else {
     subCategoryContainer.classList.add('hidden');
-    abonoFields.classList.add('hidden');
   }
 });
 
-// Lógica para exibir campos específicos ao selecionar Abono de Multas e Juros
+// Lógica para exibir campos adicionais com base na subcategoria
+document.getElementById('cf_tipo_de_solicitacao').addEventListener('change', function () {
+  const subCategory = this.value;
+  const abonoFields = document.getElementById('abonoFields'); // Certifique-se de que o elemento existe
+
+  // Verifica se o elemento existe antes de tentar manipulá-lo
+  if (abonoFields) {
+    // Verifica se a subcategoria selecionada é "Abono de Multas e Juros"
+    if (subCategory === 'Abono de Multa e Juros') {
+      abonoFields.classList.remove('hidden');
+    } else {
+      abonoFields.classList.add('hidden');
+    }
+  } else {
+    console.error('Elemento "abonoFields" não encontrado no DOM.');
+  }
+});
+
 document.getElementById('cf_tipo_de_solicitacao').addEventListener('change', function () {
   const subCategory = this.value;
   const abonoFields = document.getElementById('abonoFields');
 
-  if (subCategory === 'abono_multas_juros') {
+  // Verifica se a subcategoria selecionada é "Abono de Multas e Juros"
+  if (subCategory === 'Abono de Multa e Juros') {
     abonoFields.classList.remove('hidden');
   } else {
     abonoFields.classList.add('hidden');
   }
 });
 
-// Lógica para enviar o formulário
+// Lógica para enviar o formulário e criar contato/ticket
 document.getElementById('ticketForm').addEventListener('submit', async function (event) {
   event.preventDefault();
 
   const subject = document.getElementById('subject').value;
   const description = document.getElementById('description').value;
-  const contactId = document.getElementById('cpfCnpj').value.replace(/\D/g, '');
+  const cpfCnpj = document.getElementById('cpfCnpj').value.replace(/\D/g, '');
+  const firstName = document.getElementById('firstName').value;
+  const lastName = document.getElementById('lastName').value;
+  const email = document.getElementById('email').value;
+  const accountName = document.getElementById('accountName').value;
+  const phone = document.getElementById('phone').value;
+  const mobile = document.getElementById('mobile').value;
+  const grupoCota = document.getElementById('cf_grupo_e_cota').value;
 
-  const ticketData = {
-    subject,
-    description,
-    contactId,
-    departmentId: '1033606000000006907', // Ajuste conforme necessário
-    channel: 'Email',
-    status: 'Open'
-  };
+  // Função para criar ou obter o contactId
+  async function createOrGetContact() {
+    const contactData = {
+      firstName,
+      lastName,
+      email,
+      accountName,
+      phone,
+      mobile,
+      cpfCnpj
+    };
+
+    try {
+      const response = await fetch('http://localhost:3000/api/createContact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(contactData)
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        return result.id; // Retorna o contactId
+      } else if (result.message.includes('já existe')) {
+        return result.id; // Se o contato já existe, captura o ID
+      } else {
+        throw new Error('Erro ao criar ou obter contato');
+      }
+    } catch (error) {
+      console.error('Erro ao criar ou obter contato:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro',
+        text: 'Não foi possível criar ou obter o contato. Verifique os dados e tente novamente.',
+        confirmButtonText: 'OK'
+      });
+      throw error;
+    }
+  }
 
   try {
+    // Obtém ou cria o contato e recupera o contactId
+    const contactId = await createOrGetContact();
+
+    // Gera os dados do ticket
+    const ticketData = generateTicketDataAbonoMultasJuros(subject, description, contactId, grupoCota, cpfCnpj);
+
+    // Envia o ticket
     const response = await fetch('http://localhost:3000/api/createTicket', {
       method: 'POST',
       headers: {
@@ -183,8 +225,8 @@ document.getElementById('ticketForm').addEventListener('submit', async function 
   } catch (error) {
     Swal.fire({
       icon: 'error',
-      title: 'Erro de conexão',
-      text: 'Ocorreu um erro de conexão. Por favor, tente novamente mais tarde.',
+      title: 'Erro',
+      text: 'Não foi possível criar o ticket. Verifique os dados e tente novamente.',
       confirmButtonText: 'OK'
     });
   }
