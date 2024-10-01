@@ -1,4 +1,4 @@
-import { createZohoTicket } from './api/api.js';
+import { createZohoTicket } from '../api/api.js';
 
 // const ticketData = {
 //   subject: 'Teste de Integração Automatizada',
