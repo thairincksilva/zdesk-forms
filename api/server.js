@@ -5,13 +5,16 @@ import createTicket from './createTicket.js';
 import createContact from './createContact.js'; 
 import getCustomer from './getCustomer.js';
 import getContactByEmail from './getContactByEmail.js';  
-import Busboy from 'busboy'; 
+import multer from 'multer'; // Importando multer
 import fs from 'fs'; 
 import path from 'path'; 
 import { attachFileToTicket } from './createTicketAttachment.js'; // Importando a função para anexar arquivos
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Configuração do multer
+const upload = multer({ dest: 'api/uploads/' }); // O multer irá salvar os arquivos temporariamente nesta pasta
 
 // Middleware
 app.use(cors());
@@ -61,36 +64,25 @@ app.get('/api/getContactByEmail', async (req, res) => {
 });
 
 // Nova rota para anexar arquivo a um ticket
-app.post('/api/tickets/:ticketId/attachments', (req, res) => {
-  const busboy = new Busboy({ headers: req.headers });
+app.post('/api/tickets/:ticketId/attachments', upload.single('file'), async (req, res) => {
   const ticketId = req.params.ticketId; // Pega o ID do ticket a partir da rota
-  let filePath = '';
+  const filePath = req.file.path; // Caminho temporário onde o multer salvou o arquivo
 
-  busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-    filePath = path.join(__dirname, 'api/uploads', filename); // Caminho para salvar temporariamente o arquivo
-    const writeStream = fs.createWriteStream(filePath);
-    file.pipe(writeStream);
+  if (!req.file) {
+    return res.status(400).json({ message: 'Nenhum arquivo enviado.' });
+  }
 
-    writeStream.on('finish', async () => {
-      try {
-        // Chamando a função de anexar arquivo a partir de createTicketAttachment.js
-        const response = await attachFileToTicket(ticketId, filePath);
-        res.status(200).json({ message: 'Anexo criado com sucesso!', data: response });
-      } catch (error) {
-        console.error('Erro ao anexar arquivo ao ticket:', error);
-        res.status(500).json({ message: 'Erro interno ao anexar arquivo ao ticket' });
-      } finally {
-        // Remover o arquivo após o envio
-        fs.unlinkSync(filePath);
-      }
-    });
-  });
-
-  busboy.on('finish', () => {
-    // Finaliza a leitura
-  });
-
-  req.pipe(busboy); // Conecta o request ao busboy
+  try {
+    // Chamando a função de anexar arquivo a partir de createTicketAttachment.js
+    const response = await attachFileToTicket(ticketId, filePath);
+    res.status(200).json({ message: 'Anexo criado com sucesso!', data: response });
+  } catch (error) {
+    console.error('Erro ao anexar arquivo ao ticket:', error);
+    res.status(500).json({ message: 'Erro interno ao anexar arquivo ao ticket' });
+  } finally {
+    // Remover o arquivo após o envio
+    fs.unlinkSync(filePath);
+  }
 });
 
 // Iniciar o servidor
