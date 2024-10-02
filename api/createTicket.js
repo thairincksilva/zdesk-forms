@@ -1,4 +1,5 @@
 import fetch from 'node-fetch'; 
+import FormData from 'form-data'; // Importa FormData para enviar dados e arquivos
 
 const clientId = '1000.KC7V3888M7W0M0BYHDFA6ORJV1082L';
 const clientSecret = '6686ff0d6d0c7a0a56c46af8daf360cb3700c05852';
@@ -36,7 +37,6 @@ export async function getNewAccessToken() {
 }
 
 export default async function createTicket(req, res) {
-
   const accessToken = await getNewAccessToken(); 
   if (!accessToken) {
     res.status(500).json({ message: 'Erro ao obter access token' });
@@ -48,14 +48,24 @@ export default async function createTicket(req, res) {
   console.log('Ticket data a ser enviado:', ticketData); 
 
   try {
+    const form = new FormData(); // Usando FormData para enviar dados e arquivos
+
+    // Adiciona os dados do ticket ao FormData
+    form.append('ticketData', JSON.stringify(ticketData));
+
+    // Se houver um arquivo anexo, adiciona ao FormData
+    if (req.file) {
+      form.append('documento_anexo', req.file.buffer, { filename: req.file.originalname });
+    }
+
     const response = await fetch('https://desk.zoho.com/api/v1/tickets', {
       method: 'POST',
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
-        'Content-Type': 'application/json',
-        'orgId': orgId
+        'orgId': orgId,
+        ...form.getHeaders(), // Adiciona os headers do FormData
       },
-      body: JSON.stringify(ticketData)
+      body: form
     });
 
     const result = await response.json();
