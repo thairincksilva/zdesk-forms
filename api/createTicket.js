@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'; 
-import FormData from 'form-data'; // Importa FormData para enviar dados e arquivos
+import FormData from 'form-data';
 
 const clientId = '1000.KC7V3888M7W0M0BYHDFA6ORJV1082L';
 const clientSecret = '6686ff0d6d0c7a0a56c46af8daf360cb3700c05852';
