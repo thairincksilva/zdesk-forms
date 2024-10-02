@@ -5,7 +5,6 @@ const clientSecret = '6686ff0d6d0c7a0a56c46af8daf360cb3700c05852';
 const refreshToken = '1000.f6d0ff0e4946d6c8a5bfc4548dba63c1.ac4ddfd4ccf09d513bb45ad7c0424b9f';
 const orgId = '861735330'; 
 
-// Função para obter um novo access token
 export async function getNewAccessToken() {
   const tokenUrl = 'https://accounts.zoho.com/oauth/v2/token';
   const params = new URLSearchParams({
@@ -36,7 +35,6 @@ export async function getNewAccessToken() {
   }
 }
 
-// Função para criar um ticket
 export default async function createTicket(req, res) {
 
   const accessToken = await getNewAccessToken(); 
@@ -47,7 +45,7 @@ export default async function createTicket(req, res) {
 
   const ticketData = req.body;
 
-  console.log('Ticket data a ser enviado:', ticketData); // Log dos dados do ticket
+  console.log('Ticket data a ser enviado:', ticketData); 
 
   try {
     const response = await fetch('https://desk.zoho.com/api/v1/tickets', {
@@ -62,7 +60,7 @@ export default async function createTicket(req, res) {
 
     const result = await response.json();
 
-    console.log('Resposta da API Zoho Desk:', result); // Log da resposta da API
+    console.log('Resposta da API Zoho Desk:', result); 
 
     if (response.ok) {
       res.status(200).json(result); 

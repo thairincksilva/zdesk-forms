@@ -4,16 +4,16 @@ import cors from 'cors';
 import createTicket from './createTicket.js'; 
 import createContact from './createContact.js'; 
 import getCustomer from './getCustomer.js';
-import getContactByEmail from './getContactByEmail.js';  // Importe a funcionalidade de buscar contato
+import getContactByEmail from './getContactByEmail.js';  
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// cors pra liberar requisicao de outros dominios
 app.use(cors());
 app.use(bodyParser.json());
 
-// Rota para criar ticket
+// rota pra criar os tickets
 app.post('/api/createTicket', async (req, res) => {
   try {
     await createTicket(req, res);
@@ -23,7 +23,7 @@ app.post('/api/createTicket', async (req, res) => {
   }
 });
 
-// Rota para criar contato
+// rota pra criar os contatos
 app.post('/api/createContact', async (req, res) => {
   try {
     await createContact(req, res);
@@ -33,7 +33,7 @@ app.post('/api/createContact', async (req, res) => {
   }
 });
 
-// Rota para buscar cliente pelo ID
+// rota pra buscar contato pelo ID
 app.get('/api/getCustomer/:id', async (req, res) => {
   const customerId = req.params.id;
 
@@ -51,7 +51,7 @@ app.get('/api/getCustomer/:id', async (req, res) => {
   }
 });
 
-// // Rota para buscar contato pelo email
+// // rota pra buscar contato pelo email
 // app.get('/api/getContactByEmail', async (req, res) => {
 //   try {
 //     await getContactByEmail(req, res);  // Utilize a função de buscar contato que foi criada no arquivo dedicado
@@ -61,12 +61,12 @@ app.get('/api/getCustomer/:id', async (req, res) => {
 //   }
 // });
 
-// Rota para buscar contato pelo email
+// rota pra buscar contato pelo email
 app.get('/api/getContactByEmail', async (req, res) => {
   await getContactByEmail(req, res);  // Certifique-se de que essa função está implementada corretamente
 });
 
-// Iniciar o servidor
+// iniciar o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
