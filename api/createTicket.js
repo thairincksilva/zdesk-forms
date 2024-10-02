@@ -27,7 +27,6 @@ export async function getNewAccessToken() {
       console.log('Novo access token obtido:', data.access_token);
       return data.access_token; 
     } else {
-      console.error('Erro ao renovar o access token:', data);
       throw new Error(`Erro ao renovar o access token: ${data.message}`);
     }
   } catch (error) {
@@ -45,41 +44,41 @@ export default async function createTicket(req, res) {
 
   const ticketData = req.body;
 
+  const form = new FormData();
+  form.append('ticketData', JSON.stringify(ticketData)); // Inclui os dados do ticket
+  if (req.file) {
+    form.append('documento_anexo', req.file.buffer, req.file.originalname); // Inclui o arquivo
+  }
+
   console.log('Ticket data a ser enviado:', ticketData); 
 
   try {
-    const form = new FormData(); // Usando FormData para enviar dados e arquivos
-
-    // Adiciona os dados do ticket ao FormData
-    form.append('ticketData', JSON.stringify(ticketData));
-
-    // Se houver um arquivo anexo, adiciona ao FormData
-    if (req.file) {
-      form.append('documento_anexo', req.file.buffer, { filename: req.file.originalname });
-    }
-
     const response = await fetch('https://desk.zoho.com/api/v1/tickets', {
       method: 'POST',
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
-        'orgId': orgId,
-        ...form.getHeaders(), // Adiciona os headers do FormData
+        'orgId': orgId
       },
-      body: form
+      body: form // Envia o FormData
     });
 
-    const result = await response.json();
-
+    const result = await response.text(); // Captura a resposta como texto
     console.log('Resposta da API Zoho Desk:', result); 
 
-    if (response.ok) {
-      res.status(200).json(result); 
-    } else {
-      console.error('Erro ao criar ticket:', result);
-      res.status(response.status).json({ message: 'Erro ao criar ticket', result });
+    try {
+      const jsonResponse = JSON.parse(result); // Tenta analisar a resposta como JSON
+      if (response.ok) {
+        res.status(200).json(jsonResponse); 
+      } else {
+        console.error('Erro ao criar ticket:', jsonResponse);
+        res.status(response.status).json({ message: 'Erro ao criar ticket', result: jsonResponse });
+      }
+    } catch (jsonError) {
+      console.error('Erro ao analisar a resposta JSON:', jsonError);
+      res.status(500).json({ message: 'Erro ao analisar a resposta da API', result });
     }
   } catch (error) {
     console.error('Erro ao fazer a requisição', error);
     res.status(500).json({ message: 'Erro ao fazer a requisição', error: error.message });
   }
-};
+}
