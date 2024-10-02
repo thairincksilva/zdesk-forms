@@ -27,6 +27,7 @@ export async function getNewAccessToken() {
       console.log('Novo access token obtido:', data.access_token);
       return data.access_token; 
     } else {
+      console.error('Erro ao renovar o access token:', data);
       throw new Error(`Erro ao renovar o access token: ${data.message}`);
     }
   } catch (error) {
@@ -65,17 +66,17 @@ export default async function createTicket(req, res) {
     const result = await response.text(); // Captura a resposta como texto
     console.log('Resposta da API Zoho Desk:', result); 
 
-    try {
-      const jsonResponse = JSON.parse(result); // Tenta analisar a resposta como JSON
-      if (response.ok) {
+    if (response.ok) {
+      try {
+        const jsonResponse = JSON.parse(result); // Tenta analisar a resposta como JSON
         res.status(200).json(jsonResponse); 
-      } else {
-        console.error('Erro ao criar ticket:', jsonResponse);
-        res.status(response.status).json({ message: 'Erro ao criar ticket', result: jsonResponse });
+      } catch (jsonError) {
+        console.error('Erro ao analisar a resposta JSON:', jsonError);
+        res.status(500).json({ message: 'Erro ao analisar a resposta da API', result });
       }
-    } catch (jsonError) {
-      console.error('Erro ao analisar a resposta JSON:', jsonError);
-      res.status(500).json({ message: 'Erro ao analisar a resposta da API', result });
+    } else {
+      console.error('Erro ao criar ticket:', result);
+      res.status(response.status).json({ message: 'Erro ao criar ticket', result });
     }
   } catch (error) {
     console.error('Erro ao fazer a requisição', error);
