@@ -7,7 +7,7 @@ const clientSecret = '6686ff0d6d0c7a0a56c46af8daf360cb3700c05852';
 const refreshToken = '1000.f6d0ff0e4946d6c8a5bfc4548dba63c1.ac4ddfd4ccf09d513bb45ad7c0424b9f';
 const orgId = '861735330';
 
-// Função para obter um novo access token
+
 export async function getNewAccessToken() {
   const tokenUrl = 'https://accounts.zoho.com/oauth/v2/token';
   const params = new URLSearchParams({
@@ -46,9 +46,10 @@ export async function attachFileToTicket(ticketId, filePath) {
     throw new Error('Não foi possível obter o access token');
   }
 
+  // ticket id: 1033606000000459152
   const formData = new FormData();
   formData.append('file', fs.createReadStream(filePath));
-
+  //
   const url = `https://desk.zoho.com/api/v1/tickets/${ticketId}/attachments`;
 
   const response = await fetch(url, {

@@ -4,17 +4,17 @@ import cors from 'cors';
 import createTicket from './createTicket.js'; 
 import createContact from './createContact.js'; 
 import getCustomer from './getCustomer.js';
-import getContactByEmail from './getContactByEmail.js';  // Importe a funcionalidade de buscar contato
+import getContactByEmail from './getContactByEmail.js';  
+import fileUploadMiddleware from './middleware/handleFilleMiddleware.js'
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+
 app.use(cors());
 app.use(bodyParser.json());
 
-// Rota para criar ticket
-app.post('/api/createTicket', async (req, res) => {
+app.post('/api/createTicket',fileUploadMiddleware, async (req, res) => {
   try {
     await createTicket(req, res);
   } catch (error) {
@@ -23,7 +23,7 @@ app.post('/api/createTicket', async (req, res) => {
   }
 });
 
-// Rota para criar contato
+
 app.post('/api/createContact', async (req, res) => {
   try {
     await createContact(req, res);
@@ -33,7 +33,7 @@ app.post('/api/createContact', async (req, res) => {
   }
 });
 
-// Rota para buscar cliente pelo ID
+
 app.get('/api/getCustomer/:id', async (req, res) => {
   const customerId = req.params.id;
 
