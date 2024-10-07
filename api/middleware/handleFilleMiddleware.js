@@ -7,6 +7,7 @@ export function fileUploadMiddleware(request, response, next) {
     
       busboyHandle.on('field', (name, value) => {
         request.body[name] = value
+        console.log(request.body[name])
       })
     
       busboyHandle.on(
@@ -38,6 +39,8 @@ export function fileUploadMiddleware(request, response, next) {
       busboyHandle.on('finish', () => {
         next()
       })
+
+      busboyHandle.end()
 }
 
 export default fileUploadMiddleware;
