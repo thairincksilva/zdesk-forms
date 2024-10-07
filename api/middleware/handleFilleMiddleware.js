@@ -1,13 +1,15 @@
 import busboy from 'busboy';
 
 export function fileUploadMiddleware(request, response, next) {
-    console.log(request)
     const busboyHandle = busboy({
         headers: request.headers,
     });
 
     request.body = {}; 
     request.files = {};
+
+
+
 
     busboyHandle.on('field', (name, value) => {
         request.body[name] = value;
@@ -28,8 +30,6 @@ export function fileUploadMiddleware(request, response, next) {
     busboyHandle.on('finish', () => {
         next(); 
     });
-
-    busboyHandle.end(request.rawBody);
 }
 
 export default fileUploadMiddleware;
