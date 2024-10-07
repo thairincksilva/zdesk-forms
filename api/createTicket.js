@@ -47,8 +47,6 @@ export default async function createTicket(req, res) {
 
   const ticketData = req.body;
 
-  
-
   console.log('Ticket data a ser enviado:', ticketData); 
 
   try {

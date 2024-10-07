@@ -32,6 +32,15 @@ app.post('/api/createContact', async (req, res) => {
   }
 });
 
+app.get('/api/accessToken', async (req,res)=>{
+  try{
+    res.status(200).json(await getNewAccessToken())  
+  }catch(error){
+    console.error('Erro ao criar contato:', error);
+    res.status(500).json({ message: 'Erro interno ao criar contato' });
+  }
+}) 
+
 
 app.get('/api/getCustomer/:id', async (req, res) => {
   const customerId = req.params.id;
@@ -68,4 +77,37 @@ app.get('/api/getContactByEmail', async (req, res) => {
 // Iniciar o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
+});
+
+app.post('/api/ticket/:id/attachments', async (req, res) => {
+  const ticketId = req.params.id;
+  const accessToken = await getNewAccessToken();
+
+  if (!accessToken) {
+    return res.status(500).json({ message: 'Erro ao obter access token' });
+  }
+
+  const formData = req.body; // Certifique-se de que você está recebendo o anexo corretamente
+
+  try {
+    const response = await fetch(`https://desk.zoho.com/api/v1/tickets/${ticketId}/attachments`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Zoho-oauthtoken ${accessToken}`,
+        'Content-Type': 'multipart/form-data',
+      },
+      body: formData, // Certifique-se de que está enviando os dados corretamente
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      return res.status(200).json(result);
+    } else {
+      return res.status(response.status).json({ message: 'Erro ao enviar anexo', result });
+    }
+  } catch (error) {
+    console.error('Erro ao enviar anexo:', error);
+    return res.status(500).json({ message: 'Erro ao enviar anexo', error });
+  }
 });
