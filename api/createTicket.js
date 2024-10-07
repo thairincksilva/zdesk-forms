@@ -67,10 +67,6 @@ export default async function createTicket(req, res) {
     console.log('Resposta da API Zoho Desk:', result);
 
     if (response.ok) {
-      if(req.files?.file) {
-        await uploadFile(result.id, req.files?.file, accessToken) 
-      }
-
       res.status(200).json(result); 
     } else {
       console.error('Erro ao criar ticket:', result);
@@ -82,21 +78,3 @@ export default async function createTicket(req, res) {
   }
 };
 
-async function uploadFile(ticketId, file, accessToken){
-  const formData = new FormData();
-  formData.append('file', file); 
-
-  const response = await fetch(`https://desk.zoho.com/api/v1/tickets/${ticketId}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Zoho-oauthtoken ${accessToken}`,
-      'orgId': orgId
-    },
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const errorResponse = await response.json();
-    throw new Error(`Error: ${errorResponse.message}`);
-  }
-}
