@@ -4,7 +4,6 @@ import createTicket from './createTicket.js';
 import createContact from './createContact.js'; 
 import getCustomer from './getCustomer.js';
 import getContactByEmail from './getContactByEmail.js';  
-import fileUploadMiddleware from './middleware/handleFilleMiddleware.js'
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-app.post('/api/createTicket',fileUploadMiddleware, async (req, res) => {
+app.post('/api/createTicket', async (req, res) => {
   try {
     await createTicket(req, res);
   } catch (error) {
