@@ -12,32 +12,32 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-// app.post('/api/createTicket',fileUploadMiddleware, async (req, res) => {
-//   try {
-//     await createTicket(req, res);
-//   } catch (error) {
-//     console.error('Erro ao criar ticket:', error);
-//     res.status(500).json({ message: 'Erro interno ao criar ticket' });
-//   }
-// });
-
-// Rota para criar os tickets
-app.post('/api/createTicket', fileUploadMiddleware, async (req, res) => {
+app.post('/api/createTicket',fileUploadMiddleware, async (req, res) => {
   try {
-    const ticketData = JSON.parse(req.body.ticketData); // Parseia os dados do ticket
-    const file = req.files.documento_anexo; // Obtém o arquivo anexo
-
-    if (file) {
-      console.log('Arquivo recebido:', file.filename); // nome do arquivo
-      // Lógica para enviar para o Zoho ou manipular conforme necessário
-    }
-
-    await createTicket(ticketData, res); // Passa os dados do ticket para a função
+    await createTicket(req, res);
   } catch (error) {
     console.error('Erro ao criar ticket:', error);
     res.status(500).json({ message: 'Erro interno ao criar ticket' });
   }
 });
+
+// Rota para criar os tickets
+// app.post('/api/createTicket', fileUploadMiddleware, async (req, res) => {
+//   try {
+//     const ticketData = JSON.parse(req.body.ticketData); // Parseia os dados do ticket
+//     const file = req.files.documento_anexo; // Obtém o arquivo anexo
+
+//     if (file) {
+//       console.log('Arquivo recebido:', file.filename); // nome do arquivo
+//       // Lógica para enviar para o Zoho ou manipular conforme necessário
+//     }
+
+//     await createTicket(ticketData, res); // Passa os dados do ticket para a função
+//   } catch (error) {
+//     console.error('Erro ao criar ticket:', error);
+//     res.status(500).json({ message: 'Erro interno ao criar ticket' });
+//   }
+// });
 
 
 app.post('/api/createContact', async (req, res) => {
