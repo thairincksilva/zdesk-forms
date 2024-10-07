@@ -1,6 +1,7 @@
 import busboy from 'busboy';
 
 export function fileUploadMiddleware(request, response, next) {
+    console.log(request)
     const busboyHandle = busboy({
         headers: request.headers,
     });
