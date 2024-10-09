@@ -15,6 +15,16 @@ const PORT = process.env.PORT || 3000;
 const upload = multer({ dest: 'uploads/' });
 
 app.use(cors());
+
+app.post('/api/createTicket/:id/attachments',upload.single('file'), async (req, res) => {
+  try {
+    await attachFileToTicket(req, res);
+  } catch (error) {
+    console.error('Erro ao criar ticket:', error);
+    res.status(500).json({ message: 'Erro interno ao criar ticket' });
+  }
+});
+
 app.use(bodyParser.json());
 
 app.post('/api/createTicket', async (req, res) => {
@@ -26,14 +36,6 @@ app.post('/api/createTicket', async (req, res) => {
   }
 });
 
-app.post('/api/createTicket/:id/attachments',upload.single('file'), async (req, res) => {
-  try {
-    await attachFileToTicket(req, res);
-  } catch (error) {
-    console.error('Erro ao criar ticket:', error);
-    res.status(500).json({ message: 'Erro interno ao criar ticket' });
-  }
-});
 
 
 app.post('/api/createContact', async (req, res) => {
