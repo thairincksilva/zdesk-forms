@@ -5,6 +5,7 @@ import createTicket from './createTicket.js';
 import createContact from './createContact.js'; 
 import getCustomer from './getCustomer.js';
 import getContactByEmail from './getContactByEmail.js';  
+import  getNewAccessToken  from './accessToken.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
