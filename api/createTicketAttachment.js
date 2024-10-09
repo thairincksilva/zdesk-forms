@@ -1,7 +1,9 @@
 import fetch from 'node-fetch';
-import FormData from 'form-data';
+import path from 'path';
 import fs from 'fs';
-import { createFile } from './createFile.js';
+import axios from 'axios';
+import FormData from 'form-data';
+
 
 const clientId = '1000.KC7V3888M7W0M0BYHDFA6ORJV1082L';
 const clientSecret = '6686ff0d6d0c7a0a56c46af8daf360cb3700c05852';
@@ -40,38 +42,40 @@ export async function getNewAccessToken() {
 }
 
 // Função para anexar um arquivo a um ticket
-export async function attachFileToTicket(ticketId, file) {
+export async function attachFileToTicket(req, res) {
   const accessToken = await getNewAccessToken();
 
   if (!accessToken) {
     throw new Error('Não foi possível obter o access token');
   }
+  const ticketId = req.params.id 
+  const filePath = path.join(process.cwd(), req.file.path)
 
-  // ticket id: 1033606000000459152
-  const formData = createFile(file)
-  //
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(filePath));
+
+  const headers = formData.getHeaders();
+  
   const url = `https://desk.zoho.com/api/v1/tickets/${ticketId}/attachments`;
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'orgId': orgId,
-      'Authorization': `Zoho-oauthtoken ${accessToken}`,
-      ...formData.getHeaders(),
-    },
-    body: formData,
-  });
-
-  fs.unlinkSync(path.join(__dirname, file.path));
-
-  const data = await response.json();
-
-  if (response.ok) {
-    
-    console.log('Anexo criado com sucesso:', data);
-    return data;
-  } else {
-    console.error('Erro ao anexar arquivo:', data);
-    throw new Error(`Erro ao anexar arquivo: ${data.message}`);
+  try{
+    const response = await axios.post(url,formData, {
+      headers: {
+        ...headers,
+        'orgId': orgId,
+        'Authorization': `Zoho-oauthtoken ${accessToken}`,
+      },
+    });
+  
+    fs.unlinkSync(filePath);
+  
+  
+    console.log('Anexo criado com sucesso:', response.data);
+    return res.status(200).json(response.data);
+  }catch(error){
+    console.error('Erro ao anexar arquivo:', error.response?.data || error.message);
+      
+    const errorMessage = error.response?.data?.message || 'Erro ao anexar arquivo';
+    return res.status(500).json({ error: errorMessage });
   }
 }
