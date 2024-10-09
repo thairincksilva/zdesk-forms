@@ -1,9 +1,9 @@
 import fetch from 'node-fetch'; 
 
-const clientId = '1000.KC7V3888M7W0M0BYHDFA6ORJV1082L';
-const clientSecret = '6686ff0d6d0c7a0a56c46af8daf360cb3700c05852';
-const refreshToken = '1000.7631633b3aa2f5fa948d39950b99e53b.621403200d1e679b4e1b22b1bc43c163';
-const orgId = '861735330'; 
+export const clientId = '1000.KC7V3888M7W0M0BYHDFA6ORJV1082L';
+export const clientSecret = '6686ff0d6d0c7a0a56c46af8daf360cb3700c05852';
+export const refreshToken = '1000.7631633b3aa2f5fa948d39950b99e53b.621403200d1e679b4e1b22b1bc43c163';
+export const orgId = '861735330'; 
 
 
 export async function getNewAccessToken() {

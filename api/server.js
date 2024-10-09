@@ -1,15 +1,18 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import multer from'multer';
 import cors from 'cors';
 import createTicket from './createTicket.js'; 
 import createContact from './createContact.js'; 
 import getCustomer from './getCustomer.js';
 import getContactByEmail from './getContactByEmail.js';  
 import { getNewAccessToken } from './accessToken.js';
+import { attachFileToTicket } from './createTicketAttachment.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const upload = multer({ dest: 'uploads/' });
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -17,6 +20,15 @@ app.use(bodyParser.json());
 app.post('/api/createTicket', async (req, res) => {
   try {
     await createTicket(req, res);
+  } catch (error) {
+    console.error('Erro ao criar ticket:', error);
+    res.status(500).json({ message: 'Erro interno ao criar ticket' });
+  }
+});
+
+app.post('/api/createTicket/:id/attachments',upload.single('file'), async (req, res) => {
+  try {
+    await attachFileToTicket(req, res);
   } catch (error) {
     console.error('Erro ao criar ticket:', error);
     res.status(500).json({ message: 'Erro interno ao criar ticket' });
@@ -80,37 +92,4 @@ app.get('/api/getContactByEmail', async (req, res) => {
 // Iniciar o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
-});
-
-app.post('/api/ticket/:id/attachments', async (req, res) => {
-  const ticketId = req.params.id;
-  const accessToken = await getNewAccessToken();
-
-  if (!accessToken) {
-    return res.status(500).json({ message: 'Erro ao obter access token' });
-  }
-
-  const formData = req.body; // Certifique-se de que você está recebendo o anexo corretamente
-
-  try {
-    const response = await fetch(`https://desk.zoho.com/api/v1/tickets/${ticketId}/attachments`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Zoho-oauthtoken ${accessToken}`,
-        'Content-Type': 'multipart/form-data',
-      },
-      body: formData, // Certifique-se de que está enviando os dados corretamente
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      return res.status(200).json(result);
-    } else {
-      return res.status(response.status).json({ message: 'Erro ao enviar anexo', result });
-    }
-  } catch (error) {
-    console.error('Erro ao enviar anexo:', error);
-    return res.status(500).json({ message: 'Erro ao enviar anexo', error });
-  }
 });

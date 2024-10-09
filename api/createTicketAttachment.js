@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import fs from 'fs';
+import { createFile } from './createFile';
 
 const clientId = '1000.KC7V3888M7W0M0BYHDFA6ORJV1082L';
 const clientSecret = '6686ff0d6d0c7a0a56c46af8daf360cb3700c05852';
@@ -39,7 +40,7 @@ export async function getNewAccessToken() {
 }
 
 // Função para anexar um arquivo a um ticket
-export async function attachFileToTicket(ticketId, filePath) {
+export async function attachFileToTicket(ticketId, file) {
   const accessToken = await getNewAccessToken();
 
   if (!accessToken) {
@@ -47,8 +48,7 @@ export async function attachFileToTicket(ticketId, filePath) {
   }
 
   // ticket id: 1033606000000459152
-  const formData = new FormData();
-  formData.append('file', fs.createReadStream(filePath));
+  const formData = createFile(file)
   //
   const url = `https://desk.zoho.com/api/v1/tickets/${ticketId}/attachments`;
 
@@ -62,9 +62,12 @@ export async function attachFileToTicket(ticketId, filePath) {
     body: formData,
   });
 
+  fs.unlinkSync(path.join(__dirname, file.path));
+
   const data = await response.json();
 
   if (response.ok) {
+    
     console.log('Anexo criado com sucesso:', data);
     return data;
   } else {
