@@ -32,11 +32,13 @@ app.post('/api/createContact', async (req, res) => {
   }
 });
 
+
+
 app.get('/api/accessToken', async (req,res)=>{
   try{
     res.status(200).json(await getNewAccessToken())  
   }catch(error){
-    console.error('Erro ao criar contato:', error);
+    console.error('Erro ao obter novo access token:', error);
     res.status(500).json({ message: 'Erro interno ao criar contato' });
   }
 }) 
