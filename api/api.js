@@ -1,7 +1,6 @@
-import fetch from 'node-fetch';
 import { getNewAccessToken } from './auth/auth.js';
+import axios from 'axios';
 
-const orgId = '861735330';
 
 export async function createZohoTicket(ticketData) {
   const accessToken = await getNewAccessToken();
@@ -14,15 +13,11 @@ export async function createZohoTicket(ticketData) {
   const apiUrl = 'https://desk.zoho.com/api/v1/tickets';
 
   try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
+    const response = await axios.post(apiUrl,JSON.stringify(ticketData),{
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
-        'Content-Type': 'application/json',
         'orgId': orgId
-      },
-      body: JSON.stringify(ticketData)
-    });
+      }});
 
     const result = await response.json();
 
