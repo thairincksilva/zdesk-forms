@@ -52,7 +52,7 @@ export async function attachFileToTicket(req, res) {
   const filePath = path.join(process.cwd(), req.file.path)
 
   const formData = new FormData();
-  formData.append('file', fs.createReadStream(filePath));
+  formData.append('file', fs.createReadStream(filePath), req.file.originalname)
 
   const headers = formData.getHeaders();
   
