@@ -3,7 +3,6 @@ import fetch from 'node-fetch';
 const clientId = '1000.KC7V3888M7W0M0BYHDFA6ORJV1082L';
 const clientSecret = '6686ff0d6d0c7a0a56c46af8daf360cb3700c05852';
 const refreshToken = '1000.7631633b3aa2f5fa948d39950b99e53b.621403200d1e679b4e1b22b1bc43c163';
-// const refreshToken = '1000.bc146e85c7feab9c9677b9ad571b9400.00b62f491d43d12ad1d12bbaa77d5700'; // old
 
 export async function getNewAccessToken() {
   const tokenUrl = 'https://accounts.zoho.com/oauth/v2/token';
@@ -37,9 +36,9 @@ export async function getNewAccessToken() {
 
 export default async function createContact(req, res) {
 
-  const { firstName, lastName, email } = req.body; 
+  const { firstName, lastName, email, phone, mobile, cpfCnpj } = req.body; 
 
-  console.log('Dados recebidos:', { firstName, lastName, email });
+  console.log('Dados recebidos:', { firstName, lastName, email, phone, mobile, cpfCnpj });
 
   const accessToken = await getNewAccessToken(); 
 
@@ -52,8 +51,10 @@ export default async function createContact(req, res) {
   const contactData = {
     firstName: firstName,
     lastName: lastName,
-    email: email
-    // accountName: accountName 
+    email: email,
+    phone: phone,
+    mobile: mobile,
+    cpfCnpj: cpfCnpj
   };
 
   console.log('Enviando dados para Zoho:', contactData);
