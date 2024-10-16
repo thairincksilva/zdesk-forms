@@ -54,7 +54,9 @@ export default async function createContact(req, res) {
     email: email,
     phone: phone,
     mobile: mobile,
-    cf_cpf_cnpj: cpfCnpj
+    cf: {
+      cf_cpf_cnpj: cpfCnpj
+    }
   };
 
   console.log('Enviando dados para Zoho:', contactData);
